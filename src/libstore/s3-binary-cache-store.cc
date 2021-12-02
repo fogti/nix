@@ -69,6 +69,9 @@ static void initAWS()
     std::call_once(flag, []() {
         Aws::SDKOptions options;
 
+        // enable debugging
+        options.loggingOptions.logLevel = Aws::Utils::Logging::LogLevel::Trace;
+
         /* We install our own OpenSSL locking function (see
            shared.cc), so don't let aws-sdk-cpp override it. */
         options.cryptoOptions.initAndCleanupOpenSSL = false;
