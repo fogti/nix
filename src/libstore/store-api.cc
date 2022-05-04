@@ -1290,19 +1290,19 @@ Derivation Store::readInvalidDerivation(const StorePath & drvPath)
 namespace nix {
 
 /* Split URI into protocol+hierarchy part and its parameter set. */
-std::pair<std::string, Store::Params> splitUriAndParams(const std::string & uri_)
+std::pair<std::string_view, Store::Params> splitUriAndParams(const std::string_view uri)
 {
-    auto uri(uri_);
     Store::Params params;
-    auto q = uri.find('?');
+    const auto q = uri.find('?');
     if (q != std::string::npos) {
         params = decodeQuery(uri.substr(q + 1));
-        uri = uri_.substr(0, q);
+        return {uri.substr(0, q), params};
+    } else {
+        return {uri, params};
     }
-    return {uri, params};
 }
 
-static bool isNonUriPath(const std::string & spec) {
+static bool isNonUriPath(const std::string_view spec) {
     return
         // is not a URL
         spec.find("://") == std::string::npos
@@ -1311,7 +1311,7 @@ static bool isNonUriPath(const std::string & spec) {
         && spec.find("/") != std::string::npos;
 }
 
-std::shared_ptr<Store> openFromNonUri(const std::string & uri, const Store::Params & params)
+std::shared_ptr<Store> openFromNonUri(const std::string_view uri, const Store::Params & params)
 {
     if (uri == "" || uri == "auto") {
         auto stateDir = getOr(params, "state", std::string_view(settings.nixStateDir));
@@ -1327,7 +1327,7 @@ std::shared_ptr<Store> openFromNonUri(const std::string & uri, const Store::Para
         return std::make_shared<LocalStore>(params);
     } else if (isNonUriPath(uri)) {
         Store::Params params2 = params;
-        params2["root"] = absPath(uri);
+        params2["root"] = absPath(Path(uri));
         return std::make_shared<LocalStore>(params2);
     } else {
         return nullptr;
@@ -1362,10 +1362,9 @@ static std::string extractConnStr(const std::string &proto, const std::string &c
     return connStr;
 }
 
-ref<Store> openStore(const std::string & uri_,
-    const Store::Params & extraParams)
+ref<Store> openStore(const std::string_view uri_,
+    Store::Params params)
 {
-    auto params = extraParams;
     try {
         auto parsedUri = parseURL(uri_);
         params.insert(parsedUri.query.begin(), parsedUri.query.end());

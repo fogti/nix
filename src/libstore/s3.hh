@@ -6,6 +6,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace Aws { namespace Client { class ClientConfiguration; } }
 namespace Aws { namespace S3 { class S3Client; } }
@@ -27,8 +28,7 @@ struct S3Helper
         unsigned int durationMs;
     };
 
-    FileTransferResult getObject(
-        const std::string & bucketName, const std::string & key);
+    FileTransferResult getObject(std::string_view bucketName, std::string_view key);
 };
 
 }

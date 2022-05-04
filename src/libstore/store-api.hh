@@ -737,8 +737,8 @@ void removeTempRoots();
    You can pass parameters to the store implementation by appending
    ‘?key=value&key=value&...’ to the URI.
 */
-ref<Store> openStore(const std::string & uri = settings.storeUri.get(),
-    const Store::Params & extraParams = Store::Params());
+ref<Store> openStore(std::string_view uri = settings.storeUri.get(),
+    Store::Params extraParams = Store::Params());
 
 
 /* Return the default substituter stores, defined by the
@@ -796,7 +796,7 @@ std::optional<ValidPathInfo> decodeValidPathInfo(
     std::optional<HashResult> hashGiven = std::nullopt);
 
 /* Split URI into protocol+hierarchy part and its parameter set. */
-std::pair<std::string, Store::Params> splitUriAndParams(const std::string & uri);
+std::pair<std::string_view, Store::Params> splitUriAndParams(std::string_view uri);
 
 std::optional<ContentAddress> getDerivationCA(const BasicDerivation & drv);
 

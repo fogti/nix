@@ -482,22 +482,22 @@ void LocalDerivationGoal::startBuilder()
            by `nix-store --register-validity'.  However, the deriver
            fields are left empty. */
         auto s = getOr(drv->env, "exportReferencesGraph");
-        Strings ss = tokenizeString<Strings>(s);
+        auto ss = tokenizeStringRef<std::vector<std::string_view>>(s);
         if (ss.size() % 2 != 0)
             throw BuildError("odd number of tokens in 'exportReferencesGraph': '%1%'", s);
-        for (Strings::iterator i = ss.begin(); i != ss.end(); ) {
+        for (auto i = ss.begin(); i != ss.end(); ) {
             auto fileName = *i++;
             static std::regex regex("[A-Za-z_][A-Za-z0-9_.-]*");
-            if (!std::regex_match(fileName, regex))
+            if (!std::regex_match(fileName.begin(), fileName.end(), regex))
                 throw Error("invalid file name '%s' in 'exportReferencesGraph'", fileName);
 
-            auto storePathS = *i++;
+            auto storePathS = Path(*i++);
             if (!worker.store.isInStore(storePathS))
                 throw BuildError("'exportReferencesGraph' contains a non-store path '%1%'", storePathS);
             auto storePath = worker.store.toStorePath(storePathS).first;
 
             /* Write closure info to <fileName>. */
-            writeFile(tmpDir + "/" + fileName,
+            writeFile(fmt("%s/%s", tmpDir, fileName),
                 worker.store.makeValidityRegistration(
                     worker.store.exportReferences({storePath}, inputPaths), false, false));
         }

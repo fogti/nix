@@ -377,6 +377,7 @@ MakeError(FormatError, Error);
 
 /* String tokenizer. */
 template<class C> C tokenizeString(std::string_view s, std::string_view separators = " \t\n\r");
+template<class C> C tokenizeStringRef(std::string_view s, std::string_view separators = " \t\n\r");
 
 
 /* Concatenate the given strings with a separator between the
@@ -386,12 +387,27 @@ std::string concatStringsSep(const std::string_view sep, const C & ss)
 {
     size_t size = 0;
     // need a cast to string_view since this is also called with Symbols
-    for (const auto & s : ss) size += sep.size() + std::string_view(s).size();
+    for (const auto & i : ss) size += sep.size() + std::string_view(i).size();
     std::string s;
     s.reserve(size);
-    for (auto & i : ss) {
+    for (const auto & i : ss) {
         if (s.size() != 0) s += sep;
         s += i;
+    }
+    return s;
+}
+
+template<class Iter>
+std::string concatStringsSep(const std::string_view sep, const Iter begin, const Iter end)
+{
+    size_t size = 0;
+    // need a cast to string_view since this is also called with Symbols
+    for (auto it = begin; it != end; ++it) size += sep.size() + std::string_view(*it).size();
+    std::string s;
+    s.reserve(size);
+    for (auto it = begin; it != end; ++it) {
+        if (s.size() != 0) s += sep;
+        s += *it;
     }
     return s;
 }

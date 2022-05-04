@@ -23,8 +23,8 @@ MakeError(BadURL, Error);
 
 std::string percentDecode(std::string_view in);
 
-std::map<std::string, std::string> decodeQuery(const std::string & query);
+std::map<std::string, std::string> decodeQuery(std::string_view query);
 
-ParsedURL parseURL(const std::string & url);
+ParsedURL parseURL(std::string_view url);
 
 }

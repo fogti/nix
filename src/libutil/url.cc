@@ -9,7 +9,7 @@ std::regex badGitRefRegex(badGitRefRegexS, std::regex::ECMAScript);
 std::regex revRegex(revRegexS, std::regex::ECMAScript);
 std::regex flakeIdRegex(flakeIdRegexS, std::regex::ECMAScript);
 
-ParsedURL parseURL(const std::string & url)
+ParsedURL parseURL(std::string_view url)
 {
     static std::regex uriRegex(
         "((" + schemeRegex + "):"
@@ -18,9 +18,9 @@ ParsedURL parseURL(const std::string & url)
         + "(?:#(" + queryRegex + "))?",
         std::regex::ECMAScript);
 
-    std::smatch match;
+    std::match_results<std::string_view::const_iterator> match;
 
-    if (std::regex_match(url, match, uriRegex)) {
+    if (std::regex_match(url.begin(), url.end(), match, uriRegex)) {
         auto & base = match[1];
         std::string scheme = match[2];
         auto authority = match[3].matched
@@ -39,13 +39,13 @@ ParsedURL parseURL(const std::string & url)
             path = "/";
 
         return ParsedURL{
-            .url = url,
+            .url = std::string(url),
             .base = base,
             .scheme = scheme,
             .authority = authority,
             .path = path,
-            .query = decodeQuery(query),
-            .fragment = percentDecode(std::string(fragment))
+            .query = decodeQuery(query.str()),
+            .fragment = percentDecode(fragment.str())
         };
     }
 
@@ -72,16 +72,16 @@ std::string percentDecode(std::string_view in)
     return decoded;
 }
 
-std::map<std::string, std::string> decodeQuery(const std::string & query)
+std::map<std::string, std::string> decodeQuery(std::string_view query)
 {
     std::map<std::string, std::string> result;
 
-    for (auto s : tokenizeString<Strings>(query, "&")) {
+    for (auto s : tokenizeStringRef<std::vector<std::string_view>>(query, "&")) {
         auto e = s.find('=');
         if (e != std::string::npos)
             result.emplace(
-                s.substr(0, e),
-                percentDecode(std::string_view(s).substr(e + 1)));
+                std::string(s.substr(0, e)),
+                percentDecode(s.substr(e + 1)));
     }
 
     return result;

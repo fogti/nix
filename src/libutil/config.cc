@@ -90,7 +90,7 @@ void AbstractConfig::applyConfig(const std::string & contents, const std::string
         if (hash != std::string::npos)
             line = std::string(line, 0, hash);
 
-        auto tokens = tokenizeString<std::vector<std::string>>(line);
+        auto tokens = tokenizeStringRef<std::vector<std::string_view>>(line);
         if (tokens.empty()) continue;
 
         if (tokens.size() < 2)
@@ -108,7 +108,7 @@ void AbstractConfig::applyConfig(const std::string & contents, const std::string
         if (include) {
             if (tokens.size() != 2)
                 throw UsageError("illegal configuration line '%1%' in '%2%'", line, path);
-            auto p = absPath(tokens[1], dirOf(path));
+            auto p = absPath(Path(tokens[1]), dirOf(path));
             if (pathExists(p)) {
                 applyConfigFile(p);
             } else if (!ignoreMissing) {
@@ -120,12 +120,12 @@ void AbstractConfig::applyConfig(const std::string & contents, const std::string
         if (tokens[1] != "=")
             throw UsageError("illegal configuration line '%1%' in '%2%'", line, path);
 
-        std::string name = tokens[0];
+        std::string name(tokens[0]);
 
         auto i = tokens.begin();
         advance(i, 2);
 
-        set(name, concatStringsSep(" ", Strings(i, tokens.end()))); // FIXME: slow
+        set(name, concatStringsSep(" ", i, tokens.end()));
     };
 }
 

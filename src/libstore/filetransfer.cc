@@ -667,7 +667,7 @@ struct curlFileTransfer : public FileTransfer
     }
 
 #if ENABLE_S3
-    std::tuple<std::string, std::string, Store::Params> parseS3Uri(std::string uri)
+    std::tuple<std::string_view, std::string_view, Store::Params> parseS3Uri(std::string_view uri)
     {
         auto [path, params] = splitUriAndParams(uri);
 
@@ -675,8 +675,8 @@ struct curlFileTransfer : public FileTransfer
             if (slash == std::string::npos)
                 throw nix::Error("bad S3 URI '%s'", path);
 
-        std::string bucketName(path, 5, slash - 5);
-        std::string key(path, slash + 1);
+        auto bucketName = path.substr(5, slash - 5);
+        auto key = path.substr(slash + 1);
 
         return {bucketName, key, params};
     }

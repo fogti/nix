@@ -147,14 +147,14 @@ ref<Aws::Client::ClientConfiguration> S3Helper::makeConfig(
 }
 
 S3Helper::FileTransferResult S3Helper::getObject(
-    const std::string & bucketName, const std::string & key)
+    const std::string_view bucketName, const std::string_view key)
 {
     debug("fetching 's3://%s/%s'...", bucketName, key);
 
     auto request =
         Aws::S3::Model::GetObjectRequest()
-        .WithBucket(bucketName)
-        .WithKey(key);
+        .WithBucket(std::string(bucketName))
+        .WithKey(std::string(key));
 
     request.SetResponseStreamFactory([&]() {
         return Aws::New<std::stringstream>("STRINGSTREAM");

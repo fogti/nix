@@ -156,6 +156,7 @@ std::pair<FlakeRef, std::string> parseFlakeRefWithFragment(
                 while (flakeRoot != "/") {
                     if (pathExists(flakeRoot + "/.git")) {
                         auto base = std::string("git+file://") + flakeRoot;
+                        auto query = match[2].str();
 
                         auto parsedURL = ParsedURL{
                             .url = base, // FIXME
@@ -163,7 +164,7 @@ std::pair<FlakeRef, std::string> parseFlakeRefWithFragment(
                             .scheme = "git+file",
                             .authority = "",
                             .path = flakeRoot,
-                            .query = decodeQuery(match[2]),
+                            .query = decodeQuery(std::string_view(query)),
                         };
 
                         if (subdir != "") {
@@ -188,7 +189,8 @@ std::pair<FlakeRef, std::string> parseFlakeRefWithFragment(
         } else {
             if (!hasPrefix(path, "/"))
                 throw BadURL("flake reference '%s' is not an absolute path", url);
-            auto query = decodeQuery(match[2]);
+            auto querypre = match[2].str();
+            auto query = decodeQuery(querypre);
             path = canonPath(fmt("%s/%s", path, getOr(query, "dir")));
         }
 
